@@ -78,6 +78,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>LegionLinq.dbml</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\StreamExtensions.cs" />
     <Compile Include="Services\ServiceToService\Error.cs" />
     <Compile Include="Services\ServiceToService\Fault.cs" />
     <Compile Include="DataStructures\IpAddressRange.cs" />

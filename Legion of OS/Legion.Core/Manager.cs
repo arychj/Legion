@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Web;
-using System.Web.UI;
 using System.Xml;
 
 using Legion.Core.Caching;
@@ -53,36 +51,39 @@ namespace Legion.Core {
         }
 
         /// <summary>
-        /// Processes the Legion request utilizing the Service cache
+        /// Processes a pre-generated Legion Request
         /// </summary>
-        /// <param name="page">The current Page object</param>
-        public static void Process(Page page){
-            if (page.Cache[Cache.CACHE_KEYS.Services] != null) {
-                Dictionary<string, Service> services = (Dictionary<string, Service>)HttpRuntime.Cache[Cache.CACHE_KEYS.Services];
-                Reply reply = GetReply(new Request(page), services);
-
-                page.Response.Clear();
-                page.Response.AppendHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
-                page.Response.AppendHeader("Pragma", "no-cache"); // HTTP 1.0.
-                page.Response.AppendHeader("Expires", "0"); // Proxies.
-                page.Response.ContentType = reply.ContentType;
-                page.Response.Write(reply);
+        /// <param name="rawRequest">The unparsed / raw request to process</param>
+        /// <returns>The Reply from the service</returns>
+        public static Reply Process(RawRequest rawRequest) {
+            Reply reply = null;
+            try {
+                rawRequest.Localize();
+                reply = Process(new Request(rawRequest));
             }
-            else {
+            catch (Exception e) {
                 Logging.Module.WriteException(new LoggedException() {
-                    Type = "CacheNotFound",
-                    Message = Settings.GetString("ExceptionMessageCacheNotFound")
+                    Type = "ProcessingException",
+                    Exception = e
                 });
+
+                return null;
             }
+
+            finally {
+                rawRequest.Deinitialize();
+            }
+
+            return reply;
         }
 
         /// <summary>
         /// Processes a pre-generated Legion Request
         /// </summary>
         /// <param name="request">The LegionRequest object to process</param>
-        /// <returns>The LegionReply from the service</returns>
+        /// <returns>The Reply from the service</returns>
         internal static Reply Process(Request request) {
-            System.Web.Caching.Cache cache = HttpRuntime.Cache;
+            System.Web.Caching.Cache cache = System.Web.HttpRuntime.Cache;
             if (cache[Cache.CACHE_KEYS.Services] != null) {
                 Reply reply = GetReply(request, (Dictionary<string, Service>)cache[Cache.CACHE_KEYS.Services]);
                 return reply;
@@ -90,7 +91,7 @@ namespace Legion.Core {
             else {
                 Logging.Module.WriteException(new LoggedException() {
                     Type = "CacheNotFound",
-                    Message = "Cache not found"
+                    Message = Settings.GetString("ExceptionMessageCacheNotFound")
                 });
 
                 return null;

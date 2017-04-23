@@ -31,7 +31,6 @@ namespace Legion.Core.Services.ServiceToService {
     /// </summary>
     public class Service {
         private Services.Request _originalRequest;
-        private HttpContext _originalContext;
         private string _service;
 
         /// <summary>
@@ -41,7 +40,6 @@ namespace Legion.Core.Services.ServiceToService {
         /// </summary>
         /// <param name="service">The name of the service</param>
         public Service(string service) {
-            _originalRequest = null;
             _service = service;
         }
 
@@ -52,16 +50,6 @@ namespace Legion.Core.Services.ServiceToService {
         /// <param name="service">The name of the service</param>
         public Service(Services.Request originalRequest, string service) {
             _originalRequest = originalRequest;
-            _service = service;
-        }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="originalContext">The origianl HttpContext</param>
-        /// <param name="service">The name of the service</param>
-        public Service(HttpContext originalContext, string service) {
-            _originalContext = originalContext;
             _service = service;
         }
 
@@ -82,8 +70,6 @@ namespace Legion.Core.Services.ServiceToService {
         /// <returns>An XML based LegionReply</returns>
         public Reply Call(string method, Dictionary<string, string> methodParams) {
             Request request;
-            if(_originalContext != null)
-                request = new Request(_originalContext, _service, method, methodParams);
             if (_originalRequest != null)
                 request = new Request(_originalRequest, _service, method, methodParams);
             else

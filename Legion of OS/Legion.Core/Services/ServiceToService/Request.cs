@@ -37,31 +37,14 @@ namespace Legion.Core.Services.ServiceToService {
         /// <param name="methodKey">the key of the method in the service to call</param>
         /// <param name="parameterSet">the parameters to pass to the method</param>
         internal Request(string serviceKey, string methodKey, Dictionary<string, string> parameterSet)
-            : this(
-                HttpContext.Current,
-                serviceKey,
-                methodKey,
-                parameterSet
-            ) { }
-
-        /// <summary>
-        /// Constructor
-        /// This constructor re-parses system values from the HttpContext.Current object.
-        /// Use of this constructor should be avoided if possible, use the overload which takes the originally parsed request. 
-        /// </summary>
-        /// <param name="context">The HttpContext to run against</param>
-        /// <param name="serviceKey">the key of the service to call</param>
-        /// <param name="methodKey">the key of the method in the service to call</param>
-        /// <param name="parameterSet">the parameters to pass to the method</param>
-        internal Request(HttpContext context, string serviceKey, string methodKey, Dictionary<string, string> parameterSet)
             : base(
-                Legion.Core.Services.Request.GetRequestId(context),
-                Legion.Core.Services.Request.GetApplicationKey(new RawRequest(context.Request)),
+                GetRequestId(),
+                GetApplicationKey(),
                 serviceKey,
                 methodKey,
                 parameterSet,
-                Requestor.GetUserIPAddress(new RawRequest(context.Request)),
-                ClientDetails.Module.IpAddress(context.Request),
+                Requestor.GetUserIPAddress(),
+                ClientDetails.Module.IpAddress(),
                 HOSTNAME,
                 true
             ) { }

@@ -198,8 +198,6 @@ namespace Legion.Core.Services {
                 CachedResult cachedResult = ResultCache.GetCachedResult(_id, resultKey);
                 if (cachedResult.Found) {
                     if (cachedResult.IsExpired && !Monitor.IsEntered(DynamicLock.Get(CACHING_LOCK_TYPE, cachingKey))) {
-                        request.MakeThreadSafe();
-
                         ParameterizedThreadStart work = new ParameterizedThreadStart(CacheMethodCall);
                         Thread thread = new Thread(work);
 
@@ -242,8 +240,6 @@ namespace Legion.Core.Services {
                     InvokeSpecialMethod(reply.Result);
                 else {
                     if (IsResultCacheable) {
-                        request.MakeThreadSafe();
-
                         CacheMethodCall(new CacheMethodCallParams() {
                             Method = this,
                             ResultKey = resultKey,

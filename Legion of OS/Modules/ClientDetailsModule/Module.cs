@@ -14,52 +14,48 @@
  *	limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
+using System.Collections.Specialized;
 
 using Legion.Core.Modules;
-using System.Collections.Specialized;
+using Legion.Core.Services;
 
 namespace ClientDetailsModule {
 
     public class Module : ClientDetails {
+
         /// <summary>
         /// Returns the client's IP Address
         /// </summary>
-        /// <param name="serverVariables">The server variables to check</param>
+        /// <param name="request">The raw request object</param>
         /// <returns>The client's IP address</returns>
-        public override string IpAddress(NameValueCollection serverVariables) {
-            return serverVariables["REMOTE_ADDR"];
+        public override string IpAddress(RawRequest request) {
+            return request.ServerVariables["REMOTE_ADDR"];
         }
 
         /// <summary>
         /// Checks if the connection is secure (HTTPS)
         /// </summary>
-        /// <param name="request">The current HTTP request object</param>
+        /// <param name="request">The raw request object</param>
         /// <returns>returns true if the connection is secure, false otherwise</returns>
-        public override bool IsSecure(HttpRequest request) {
-            return request.IsSecureConnection;
+        public override bool IsSecure(RawRequest request) {
+            return (request.ServerVariables["HTTPS"] == "ON");
         }
 
         /// <summary>
         /// Checks if the client is internal to DH
         /// </summary>
-        /// <param name="ip">The IP address to check</param>
+        /// <param name="request">The raw request object</param>
         /// <returns>true if the client is internal, false otherwise</returns>
-        public override bool IsInternal(string ipaddress) {
+        public override bool IsInternal(RawRequest request) {
             return false;
         }
 
         /// <summary>
         /// Checks if the client is in the datacenter
         /// </summary>
-        /// <param name="ipaddress">The IP address to check</param>
+        /// <param name="request">The raw request object</param>
         /// <returns>true if the client is in the datacenter, false otherwise</returns>
-        public override bool IsDatacenter(string ipaddress) {
+        public override bool IsDatacenter(RawRequest request) {
             return false;
         }
     }

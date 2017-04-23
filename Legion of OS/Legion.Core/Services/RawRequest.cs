@@ -18,78 +18,120 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
+
+using Legion.Core.Extensions;
+using Legion.Core.Modules;
 
 namespace Legion.Core.Services {
-    internal class RawRequest {
-        private bool _isThreadSafe = false;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class RawRequest {
+
+        /// <summary>
+        /// The current RawRequest
+        /// </summary>
+        [ThreadStatic]
+        public static RawRequest Current = null;
 
         private string _body;
         private NameValueCollection _querystring;
         private NameValueCollection _form;
         private NameValueCollection _servervariables;
+        private Dictionary<string, object> _items;
 
+        /// <summary>
+        /// Combined parameters provided in the request
+        /// </summary>
+        /// <param name="key">The key to retrieve</param>
+        /// <returns></returns>
         public string this[string key]{
             get {
                 if (_form[key] != null)
                     return _form[key];
                 else if (_querystring[key] != null)
                     return _querystring[key];
+                else if (_items.ContainsKey(key))
+                    return _items[key].ToString();
                 else
                     return null;
             }
         }
 
+        /// <summary>
+        /// The request body
+        /// </summary>
         public string Body {
             get { return _body; }
         }
 
+        /// <summary>
+        /// The request POST parameters
+        /// </summary>
         public NameValueCollection Form {
             get { return _form; }
         }
 
+        /// <summary>
+        /// The request GET parameters
+        /// </summary>
         public NameValueCollection QueryString {
             get { return _querystring; }
         }
 
+        /// <summary>
+        /// The request SERVER parameters
+        /// </summary>
         public NameValueCollection ServerVariables {
             get { return _servervariables; }
         }
 
-        public RawRequest(System.Web.HttpRequest originalRequest) {
-            _querystring = originalRequest.QueryString;
-            _form = originalRequest.Form;
-            _servervariables = originalRequest.ServerVariables;
-            _body = GetDocumentContents(originalRequest);
+        /// <summary>
+        /// Additional request items
+        /// </summary>
+        public Dictionary<string, object> Items {
+            get { return _items; }
         }
 
         /// <summary>
-        /// Makes the Request object safe for use in threads by internalizing members
+        /// CONSTRUCTOR
         /// </summary>
-        public void MakeThreadSafe() {
-            if (!_isThreadSafe) {
-                //copy the  collections from the HttpContext members they are currently referencing
-                _querystring = new NameValueCollection(_querystring);
-                _form = new NameValueCollection(_form);
-                _servervariables = new NameValueCollection(_servervariables);
+        /// <param name="querystring">The collection of provided GET parameters</param>
+        /// <param name="form">The collection of provided POST parameters</param>
+        /// <param name="serverVariables">The collection of provided SERVER parameters</param>
+        /// <param name="body">The provided</param>
+        public RawRequest(NameValueCollection querystring, NameValueCollection form, NameValueCollection serverVariables, string body) {
+            _querystring = new NameValueCollection(querystring);
+            _form = new NameValueCollection(form);
+            _servervariables = new NameValueCollection(serverVariables);
+            _body = body;
+            _items = new Dictionary<string, object>();
+        }
 
-                _isThreadSafe = true;
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="querystring">The collection of provided GET parameters</param>
+        /// <param name="form">The collection of provided POST parameters</param>
+        /// <param name="serverVariables">The collection of provided SERVER parameters</param>
+        /// <param name="sBody">The body input stream</param>
+        public RawRequest(NameValueCollection querystring, NameValueCollection form, NameValueCollection serverVariables, Stream sBody)
+            : this(querystring, form, serverVariables, sBody.ReadAllToString())  {}
+
+        internal void Localize() {
+            if(RawRequest.Current == null)
+                RawRequest.Current = this;
+            else {
+                Logging.Module.WriteException(new LoggedException() {
+                    Type = "xxx",
+                    Message = ""
+                });
             }
         }
 
-        private string GetDocumentContents(System.Web.HttpRequest request) {
-            string body;
-
-            using (Stream receiveStream = request.InputStream) {
-                using (StreamReader readStream = new StreamReader(receiveStream, Encoding.UTF8)) {
-                    body = readStream.ReadToEnd();
-                }
-            }
-
-            return body;
+        internal void Deinitialize() {
+            RawRequest.Current = null;
         }
     }
 }

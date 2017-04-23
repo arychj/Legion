@@ -38,11 +38,11 @@ namespace Legion.Core.Clients {
         /// </summary>
         /// <param name="request">The incoming request</param>
         public Requestor(Request request) {
-            string requestIpAddress = ClientDetails.Module.IpAddress(request.Raw.ServerVariables);
+            string requestIpAddress = ClientDetails.Module.IpAddress();
 
             _parameters = request.ParameterSet;
 
-            if (_parameters.ContainsKey(Settings.GetString("ParameterKeyRequestorImpersonateIp")) && ClientDetails.Module.IsDatacenter(requestIpAddress) && IsValidIpAddress(_parameters[Settings.GetString("ParameterKeyRequestorImpersonateIp")]))
+            if (_parameters.ContainsKey(Settings.GetString("ParameterKeyRequestorImpersonateIp")) && ClientDetails.Module.IsDatacenter() && IsValidIpAddress(_parameters[Settings.GetString("ParameterKeyRequestorImpersonateIp")]))
                 _hostipaddress = _parameters[Settings.GetString("ParameterKeyRequestorImpersonateIp")];
             else
                 _hostipaddress = requestIpAddress;
@@ -122,7 +122,7 @@ namespace Legion.Core.Clients {
         /// Returns true if the calling host is internal to DH
         /// </summary>
         public bool IsHostInternal {
-            get { return ClientDetails.Module.IsInternal(_hostipaddress); }
+            get { return ClientDetails.Module.IsInternal(RawRequest.Current); }
         }
 
         /// <summary>
@@ -130,8 +130,8 @@ namespace Legion.Core.Clients {
         /// </summary>
         /// <param name="request">The request object</param>
         /// <returns>The user's IP address</returns>
-        internal static string GetUserIPAddress(RawRequest request) {
-            return request.Form[Settings.GetString("ParameterKeyRequestorUserIp")] ?? ClientDetails.Module.IpAddress();
+        internal static string GetUserIPAddress() {
+            return RawRequest.Current.Form[Settings.GetString("ParameterKeyRequestorUserIp")] ?? ClientDetails.Module.IpAddress(RawRequest.Current);
         }
 
         private static bool IsValidIpAddress(string sIp) {

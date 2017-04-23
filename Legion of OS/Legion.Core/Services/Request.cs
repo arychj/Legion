@@ -21,9 +21,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Xml;
 
 using Legion.Core.Exceptions;
@@ -55,17 +52,10 @@ namespace Legion.Core.Services {
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="page">The page variable</param>
-        public Request(Page page) : this(page.Request) { }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="request">The incoming HttpRequest object</param>
-        public Request(System.Web.HttpRequest request) {
+        /// <param name="rawRequest">The raw request parameters</param>
+        internal Request(RawRequest rawRequest) {
             Id = Guid.NewGuid();
-
-            _rawRequest = new RawRequest(request);
+            _rawRequest = rawRequest;
 
             if (APIKey != null && APIKey.IsValid)
                 _application = APIKey.Application;
@@ -131,8 +121,8 @@ namespace Legion.Core.Services {
             private set {
                 _id = value;
 
-                if (HttpContext.Current != null)
-                    HttpContext.Current.Items[CURRENT_REQUEST_ID_KEY] = value;
+                if (RawRequest.Current != null)
+                    RawRequest.Current.Items[CURRENT_REQUEST_ID_KEY] = value;
             }
         }
 
@@ -194,7 +184,7 @@ namespace Legion.Core.Services {
         public APIKey APIKey {
             get {
                 if (_apiKey == null)
-                    _apiKey = new APIKey(Request.GetApplicationKey(_rawRequest));
+                    _apiKey = new APIKey(GetApplicationKey());
 
                 return _apiKey;
             }
@@ -468,11 +458,11 @@ namespace Legion.Core.Services {
         /// </summary>
         public static Request Current {
             get {
-                if (HttpContext.Current == null)
+                if (RawRequest.Current == null)
                     throw new AsynchronousContextException(Settings.GetString("ExceptionMessageAsyncReferenceRequestCurrent"));
                 else {
-                    if (HttpContext.Current.Items.Contains(CURRENT_REQUEST_ID_KEY)) {
-                        Guid id = (Guid)HttpContext.Current.Items[CURRENT_REQUEST_ID_KEY];
+                    if (RawRequest.Current.Items.ContainsKey(CURRENT_REQUEST_ID_KEY)) {
+                        Guid id = (Guid)RawRequest.Current.Items[CURRENT_REQUEST_ID_KEY];
                         return GetRequest(id);
                     }
                     else
@@ -514,22 +504,12 @@ namespace Legion.Core.Services {
             _isComplete = true;
         }
 
-        /// <summary>
-        /// Makes the Request object safe for use in threads by internalizing members
-        /// </summary>
-        internal void MakeThreadSafe() {
-            if (!_isTheadSafe) {
-                _rawRequest.MakeThreadSafe();
-                _isTheadSafe = true;
-            }
-        }
-
-        internal static string GetApplicationKey(RawRequest request) {
+        internal static string GetApplicationKey() {
             string applicationKey = null;
 
             foreach (string key in Settings.GetArray("ParameterKeySetRequestApplication")) {
-                if (request[key] != null) {
-                    applicationKey = request[key];
+                if (RawRequest.Current[key] != null) {
+                    applicationKey = RawRequest.Current[key];
                     break;
                 }
             }
@@ -537,9 +517,9 @@ namespace Legion.Core.Services {
             return applicationKey;
         }
 
-        internal static Guid? GetRequestId(HttpContext context) {
-            if (HttpContext.Current.Items.Contains(CURRENT_REQUEST_ID_KEY))
-                return (Guid)HttpContext.Current.Items[CURRENT_REQUEST_ID_KEY];
+        internal static Guid? GetRequestId() {
+            if (RawRequest.Current.Items.ContainsKey(CURRENT_REQUEST_ID_KEY))
+                return (Guid)RawRequest.Current.Items[CURRENT_REQUEST_ID_KEY];
             else
                 return null;
         }

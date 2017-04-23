@@ -15,11 +15,27 @@
  */
 
 using System;
+using System.Collections.Specialized;
+
+using Legion.Core;
+using Legion.Core.Services;
 
 namespace Centurion {
     public partial class api : System.Web.UI.Page {
         protected void Page_Load(object sender, EventArgs e) {
-            Legion.Core.Manager.Process(Page);
+            Reply reply = Manager.Process(new RawRequest(
+                Request.QueryString,
+                Request.Form,
+                Request.ServerVariables,
+                Request.InputStream
+            ));
+
+            Response.Clear();
+            Response.AppendHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+            Response.AppendHeader("Pragma", "no-cache"); // HTTP 1.0.
+            Response.AppendHeader("Expires", "0"); // Proxies.
+            Response.ContentType = reply.ContentType;
+            Response.Write(reply);
         }
     }
 }

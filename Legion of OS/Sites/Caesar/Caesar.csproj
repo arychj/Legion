@@ -67,6 +67,9 @@
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="URLRewriter">
+      <HintPath>..\..\Vendor\URLRewriter.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Ajax.aspx" />
@@ -175,10 +178,7 @@
       <LastGenOutput>LegionLinq.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </None>
-    <None Include="Properties\PublishProfiles\deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\development.pubxml" />
-    <None Include="Properties\PublishProfiles\local.pubxml" />
-    <None Include="Properties\PublishProfiles\staging.pubxml" />
+    <None Include="Properties\PublishProfiles\acheron.pubxml" />
     <Content Include="Web.config.default" />
   </ItemGroup>
   <ItemGroup>
