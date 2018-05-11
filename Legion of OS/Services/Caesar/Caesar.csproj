@@ -103,12 +103,6 @@
       <DependentUpon>LegionLinq.dbml</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Legion.Core\Core.csproj">
-      <Project>{C50774FE-054F-463A-BECC-9F6162EDD83B}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

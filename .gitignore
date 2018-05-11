@@ -10,3 +10,4 @@
 /Legion of OS/*/*/*/PublishProfiles
 /Legion of OS/Vendor
 /Legion of OS/*/*/Web.config
+/Legion of OS/packages/Newtonsoft.Json.11.0.2

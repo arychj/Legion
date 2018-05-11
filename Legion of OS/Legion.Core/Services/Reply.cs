@@ -14,13 +14,12 @@
  *	limitations under the License.
  */
 
+using Legion.Core.Services.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
-
-using Newtonsoft.Json;
 
 namespace Legion.Core.Services {
 
@@ -112,7 +111,7 @@ namespace Legion.Core.Services {
         public override string ToString() {
             switch (_replyFormat) {
                 case "json":
-                    return JsonConvert.SerializeObject(_dom);
+                    return DataConversion.XmlToJson(_dom);
                 case "xml":
                     return _dom.OuterXml;
                 case "system":
